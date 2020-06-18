@@ -1,8 +1,10 @@
+import PyQt5
 from PyQt5 import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import sys, random, math, copy
+import inspect
 from EFeature import *
 
 class EClassFeature():
@@ -376,12 +378,14 @@ class SpellCardDialog(QDialog):
 
         self.setWindowFlags(self.windowFlags() ^ Qt.WindowContextHelpButtonHint)
 
-        self.card_Text = QTextEdit()
+        self.card_Text = ETextEdit()
         self.card_Text.setReadOnly(True)
+
+        ## THIS IS THE BUG
         try:
             self.card_Text.setMarkdown(spell.fullDescription.replace("<br>","\n\n"))
         except Exception as e:
-            print(e, type(self.card_Text))
+            print(e)
             self.card_Text.setPlainText(spell.fullDescription.replace("<br>","\n"))
 
         self.mainLayout.addWidget(self.card_Text,0,0)

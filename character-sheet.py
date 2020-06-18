@@ -1131,8 +1131,14 @@ class EMainWidget(QWidget):
             newChar.ideals = charInfo[12]
             newChar.bonds  = charInfo[13]
             newChar.flaws  = charInfo[14]
-            newChar.armorClass = int(charInfo[15])
-            newChar.initiative = int(charInfo[16])
+            try:
+                newChar.armorClass = int(charInfo[15])
+            except:
+                newChar.armorClass = None
+            try:
+                newChar.initiative = int(charInfo[16])
+            except:
+                newChar.initiative = None
             newChar.speed = int(charInfo[17])
             newChar.name = charInfo[0]
 
@@ -1798,6 +1804,7 @@ class Window(QMainWindow):
         self.setVisible(True)
 
 if __name__ == "__main__":
+    print(QtCore.PYQT_VERSION_STR)
     app = QApplication([])
     MainWindow = Window()
     MainWindow.show()
