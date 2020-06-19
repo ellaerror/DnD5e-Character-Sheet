@@ -65,7 +65,7 @@ class EClass():
         data += self.name+","
         data += str(self.hitDie)+","
         for feat in self.features:
-            data += ";".join(":".join(x) for x in feat).replace("\n","<>").replace(",","$")+","
+            data += ";".join(":".join(x) for x in feat).replace("\n","<>").replace(",","$").replace(";","`")+","
         data+= self.spellcastingAbility+","+",".join(self.savingThrows)+","
         for k,p in self.proficiencies.items():
             if k != 'Skill':
@@ -151,7 +151,7 @@ class ESubclass():
         string += self.basename+","
         fList = []
         for level in self.features:
-            fList.append(";".join(":".join(x) for x in level).replace(",","$").replace("\n","<>"))
+            fList.append(";".join(":".join(x) for x in level).replace(",","$").replace("\n","<>").replace(";","`"))
         string += ",".join(fList)+","
         if self.spellcasting:
             string += "1,"
@@ -213,7 +213,7 @@ def importSubclasses(path,classes):
         for i in range(0,len(temp.features)):
             for j in range(0,len(temp.features[i])):
                 temp.features[i][j] = temp.features[i][j].split(":")
-                temp.features[i][j][-1] = temp.features[i][j][-1].replace("~",":")
+                temp.features[i][j][-1] = temp.features[i][j][-1].replace("~",":").replace("`",";")
 
         if data[23] == "1":
             temp.spellcasting = True
@@ -255,7 +255,7 @@ def importClasses(path):
         for i in range(0,len(temp.features)):
             for j in range(0,len(temp.features[i])):
                 temp.features[i][j] = temp.features[i][j].split(":")
-                temp.features[i][j][-1] = temp.features[i][j][-1].replace("~",":")
+                temp.features[i][j][-1] = temp.features[i][j][-1].replace("~",":").replace("`",";")
         # Spellcasting Ability
         temp.spellcastingAbility = data[22]
         if data[22] != "None":

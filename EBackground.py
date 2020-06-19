@@ -11,11 +11,11 @@ class EBackground():
         string = ""
         string += self.name+","
         string += str(self.addLang)+","
-        string += ";".join(self.proficiencies['Tool'])+","
-        string += ",".join(self.proficiencies['Skill'])+","
+        string += ";".join(self.proficiencies['Tool']).replace(",","$")+","
+        string += ",".join(self.proficiencies['Skill']).replace(",","$")+","
         string += ";".join(":".join(x) for x in self.features).replace(",","$").replace("\n","<>")+","
         string += str(self.gp)+","
-        string += ";".join(self.startingEquipment)
+        string += ";".join(self.startingEquipment).replace(",","$")
         return string
 
     def fromLine(linedata):
@@ -51,9 +51,9 @@ def importBackgrounds(path):
         # Add. Languages
         temp.addLang = int(data[1])
         # Proficiencies
-        temp.proficiencies['Tool'] = data[2].split(";")
-        temp.proficiencies['Skill']= [data[3]]
-        temp.proficiencies['Skill'].append(data[4])
+        temp.proficiencies['Tool'] = data[2].replace("$",",").split(";")
+        temp.proficiencies['Skill']= [data[3].replace("$",",")]
+        temp.proficiencies['Skill'].append(data[4].replace("$",","))
         # Features
         temp.features = data[5].replace("<>","\n").replace("$",",").split(";")
 
