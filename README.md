@@ -11,7 +11,7 @@ A DnD 5e character sheet with options for subclasses, spells, and more.
 
 ## How to Run
 
-- Double-click the python called "character-sheet.pyw" to run the program. (This hides the command shell)
+- Double-click the python file called "character-sheet.pyw" to run the program. (This hides the command shell)
 -  Or you can run the command `py character-sheet.pyw` in a cmdline shell or powershell console.
 
 ## Using the Program
