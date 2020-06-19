@@ -106,8 +106,14 @@ If you're a sorcerer, then your sorcery points will be displayed in the top righ
 
 #### Spells
 
-Warlocks and Artificers will see their Invocation/Infusion list appear below the 6th level spell list when those options become available to them.
+Spells are organized by their level. To add a spell, just press the "+" button on in the correlating level box. The spells that are available for you to add are filtered based on your class, subclass, and in some cases your race. Unfortunately, the spell list provided in this program is not exhaustive in detailing subclass and race specific spells, so those may not appear for you, even if your features say you can learn them. If you find this is the case, please contact me or raise an issue.
+
+In your spell list, spells show a few basic features about them. From left to right, each spell shows a checkbox to show if it's prepared or not, its name, if it's a ritual or a concentration spell, the casting time, and the components of the spell. If you'd like to see more details about a spell, click it once to see the description. If you want to see the whole spell card, double-click the spell name or description. This will open a popup window with the spell card on it. You can have as many spell cards open as you want. 
+
+Warlocks and Artificers will see their Invocation/Infusion list appear below the 6th level spell list when those options become available to them. 
 
 ### Rolling Dice
 
 To open the dice roll prompt, press Crtl+R, or press File>Roll a Die.
+
+Here, you can choose how many dice to roll, what kind of die, and to add any modifier. You can add a negative modifier as well. To roll, just press the roll button. The prompt will display all of the induvidual rolls made and the modifier added. The final score is displayed in the while box.
