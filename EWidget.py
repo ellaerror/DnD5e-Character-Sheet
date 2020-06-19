@@ -263,8 +263,8 @@ class ESpellModel(QAbstractItemModel):
         return self.rootItem
 
 class ESpellListWidget(QTreeView):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setIndentation(0)
         self.setWordWrap(True)
         self.setVerticalScrollMode(QAbstractItemView.ScrollPerPixel)
@@ -310,6 +310,9 @@ class ESpellListWidget(QTreeView):
 
 
 class AddSpellDialog(QDialog):
+
+    spellsSelected = pyqtSignal(list)
+
     def __init__(self, parent=None, windowTitle="Add new spells"):
         super().__init__(parent)
         self.spells = None
@@ -334,8 +337,8 @@ class AddSpellDialog(QDialog):
         self.mainLayout.addWidget(self.addSpell_Button,1,1)
 
     def initUI(self):
-        self.spells_View = ESpellListWidget()
-        self.spells_List = ESpellModel(parent=None, root=["","Name","C/R","Time","VSM"])
+        self.spells_View = ESpellListWidget(parent=self)
+        self.spells_List = ESpellModel(parent=self, root=["","Name","C/R","Time","VSM"])
 
     def addSpell(self):
         self.spells = []
@@ -346,6 +349,7 @@ class AddSpellDialog(QDialog):
                 toRemove.append(child)
         for child in toRemove:
             self.spells_List.removeRow(child.row())
+        self.spellsSelected.emit(self.spells)
         self.close()
 
     def prepExec(self, className="None", subclassName="None", race="None"):
@@ -355,7 +359,7 @@ class AddSpellDialog(QDialog):
         self.spells_View.setModel(self.displaySpell_List)
         self.spells_View.setExpanded(self.spells_View.rootIndex(), True)
         self.resize(400,500)
-        super().exec_()
+        super().show()
 
 class ESpellItem(EBaseItem):
     def __init__(self, data, parent=None, source=ESpell):
@@ -378,20 +382,16 @@ class SpellCardDialog(QDialog):
 
         self.setWindowFlags(self.windowFlags() ^ Qt.WindowContextHelpButtonHint)
 
-        self.card_Text = ETextEdit()
+        self.card_Text = QTextEdit()
         self.card_Text.setReadOnly(True)
 
-        ## THIS IS THE BUG
-        try:
-            self.card_Text.setMarkdown(spell.fullDescription.replace("<br>","\n\n"))
-        except Exception as e:
-            print(e)
-            self.card_Text.setPlainText(spell.fullDescription.replace("<br>","\n"))
+        self.card_Text.setMarkdown(spell.fullDescription.replace("<br>","\n\n"))
 
         self.mainLayout.addWidget(self.card_Text,0,0)
 
     def setParent(self, parent):
         self.parent = parent
+        super().setParent(parent)
 
     def show(self):
         self.resize(350,400)
@@ -411,6 +411,7 @@ class SpellSlotWidget(QGroupBox):
         self.parent = parent
         self.level = level
         self.addSpellDialog = AddSpellDialog(self)
+        self.addSpellDialog.spellsSelected.connect(self.receiveSpell)
 
         self.mainLayout = QGridLayout()
         self.mainLayout.setContentsMargins(4,4,4,4)
@@ -418,8 +419,6 @@ class SpellSlotWidget(QGroupBox):
 
         self.setLayout(self.mainLayout)
         self.setStyleSheet(self.groupBoxStyleSheet_NoTitle)
-
-        self.initUI(spellList, level)
 
         self.delSpell_Button = QPushButton("-")
         self.delSpell_Button.setFixedHeight(20)
@@ -429,13 +428,12 @@ class SpellSlotWidget(QGroupBox):
         self.addSpell_Button.setFixedHeight(20)
         self.addSpell_Button.clicked.connect(self.addSpell)
 
-        button_Layout = QHBoxLayout()
-        button_Layout.setContentsMargins(0,0,0,0)
-        button_Layout.addWidget(self.delSpell_Button)
-        button_Layout.addWidget(self.addSpell_Button)
+        self.button_Layout = QHBoxLayout()
+        self.button_Layout.setContentsMargins(0,0,0,0)
+        self.button_Layout.addWidget(self.delSpell_Button)
+        self.button_Layout.addWidget(self.addSpell_Button)
 
-        self.mainLayout.addWidget(self.spells_View,2,0,1,3)
-        self.mainLayout.addLayout(button_Layout,3,0,1,3)
+        self.initUI(spellList, level)
 
     def initUI(self, spellList, level):
         self.spells_View = ESpellListWidget()
@@ -447,7 +445,8 @@ class SpellSlotWidget(QGroupBox):
 
         if self.level != 0:
             self.slots    = ELabel("0", fontSize=self.big_FS, bold=False, width=self.big_FS*6)
-            self.expended = ELineEdit("0", fontSize=self.big_FS, bold=False, height=(self.big_FS*2)-3)
+            #print()
+            self.expended = ELineEdit("0", fontSize=self.big_FS, bold=False, height=self.slots.heightForWidth(self.big_FS*6))
 
             self.mainLayout.addWidget(ELabel("Level",add=False,fontSize=self.small_FS),0,0,Qt.AlignHCenter|Qt.AlignTop)
             self.mainLayout.addWidget(ELabel("Total Slots",add=False,fontSize=self.small_FS),0,1,Qt.AlignHCenter|Qt.AlignTop)
@@ -456,6 +455,7 @@ class SpellSlotWidget(QGroupBox):
             self.mainLayout.addWidget(ELabel(str(level), fontSize=self.big_FS, bold=False, width=self.big_FS*3),1,0,Qt.AlignTop)
             self.mainLayout.addWidget(self.slots,    1,1,Qt.AlignTop)
             self.mainLayout.addWidget(self.expended, 1,2,Qt.AlignTop)
+
         else:
             self.known_Label = ELabel("0",fontSize=self.big_FS, bold=False)
 
@@ -469,14 +469,19 @@ class SpellSlotWidget(QGroupBox):
                 mainSpell.appendChild(ESpellItem([spell.description], source=spell))
                 self.addSpellDialog.spells_List.appendRow(mainSpell)
 
+        self.mainLayout.addWidget(self.spells_View,2,0,1,3)
+        self.mainLayout.addLayout(self.button_Layout,3,0,1,3)
+
     def addSpell(self):
         if self.parent.currentCharacter.subclass.basename == "land":
             sc = self.parent.currentCharacter.druidLand
         else:
             sc = self.parent.currentCharacter.subclass.basename
         self.addSpellDialog.prepExec(self.parent.currentCharacter.mainclass.name, sc, self.parent.currentCharacter.subrace.name)
-        if self.addSpellDialog.spells:
-            for spell in self.addSpellDialog.spells:
+
+    def receiveSpell(self, spells):
+        if spells:
+            for spell in spells:
                 spell.itemData[0] = False
                 self.spells_List.appendRow(spell)
                 self.parent.currentCharacter.spells.append(spell.source)
@@ -544,6 +549,7 @@ class EInvocationList(SpellSlotWidget):
 
     def initUI(self, invocationList, level):
         self.addSpellDialog = AddInvocDialog(self)
+        self.addSpellDialog.spellsSelected.connect(self.receiveSpell)
 
         self.spells_View = EInvocListWidget()
         font = self.spells_View.font()
@@ -562,10 +568,15 @@ class EInvocationList(SpellSlotWidget):
             mainSpell.appendChild(ESpellItem([invoc.description], source=invoc))
             self.addSpellDialog.spells_List.appendRow(mainSpell)
 
+        self.mainLayout.addWidget(self.spells_View,2,0,1,3)
+        self.mainLayout.addLayout(self.button_Layout,3,0,1,3)
+
     def addSpell(self):
         self.addSpellDialog.prepExec(self.parent.currentCharacter.level)
-        if self.addSpellDialog.spells:
-            for spell in self.addSpellDialog.spells:
+
+    def receiveSpell(self, spells):
+        if spells:
+            for spell in spells:
                 self.spells_List.appendRow(spell)
                 self.parent.currentCharacter.spells.append(spell.source)
             self.spells_View.setExpanded(self.spells_View.rootIndex(), True)
@@ -605,11 +616,14 @@ class EInvocListWidget(ESpellListWidget):
         self.viewport().update()
 
 class AddInvocDialog(AddSpellDialog):
+
+    spellsSelected = pyqtSignal(list)
+
     def __init__(self, parent=None, windowTitle="Add an Invocation"):
         super().__init__(parent, windowTitle)
 
     def initUI(self):
-        self.spells_View = EInvocListWidget(clickExpand=False, cardShow=False)
+        self.spells_View = EInvocListWidget(clickExpand=False, cardShow=True)
         self.spells_List = ESpellModel(parent=None, root=["Name", "Prerequisite"])
 
     def prepExec(self, level):
@@ -618,7 +632,7 @@ class AddInvocDialog(AddSpellDialog):
         self.spells_View.setModel(self.displaySpell_List)
         self.spells_View.expandAll()
         self.resize(400,500)
-        super().exec_()
+        super().show()
 
     def addSpell(self):
         invocation = self.spells_View.selectedIndexes()[0].internalPointer()
@@ -627,7 +641,159 @@ class AddInvocDialog(AddSpellDialog):
         else:
             self.spells = [invocation]
         self.spells_List.removeRow(invocation.row())
+        self.spellsSelected.emit(self.spells)
         self.close()
+
+#
+# START INFUSIONS
+#
+
+class EInfusion():
+    def __init__(self, line_Data):
+        if type(line_Data) == bytes:
+            line_Data = str(line_Data.strip(b"\n"),"utf8")
+        else:
+            line_Data = line_Data.strip("\n")
+        data = line_Data.split("\t")
+        self.name = data[0]
+        self.level_Req = int(data[1])
+        self.item = data[2]
+        self.attunement = bool(data[3])
+        self.description = data[4].replace("<br>","\n\n")
+        self.source = data[5]
+
+        self.fullDescription = "## "+self.name+"\n\n"
+        if self.level_Req > 0:
+            if self.level_Req > 0:
+                self.fullDescription += "**Requirements:** "
+                self.fullDescription += str(self.level_Req)+" level"
+                self.fullDescription += "\n\n"
+        self.fullDescription += "**Item:** "+self.item
+        if self.attunement:
+            self.fullDescription += " (requires attunement)\n\n"
+        else:
+            self.fullDescription += "\n\n"
+        self.fullDescription += "**Source:** "+self.source+"\n\n"
+        self.fullDescription += self.description
+        self.dialog = SpellCardDialog(self)
+
+def importInfusions(file_Path):
+    input = open(file_Path, "rb")
+    infusions = []
+    data = input.readline()
+    data = input.readline()
+    while data:
+        infusions.append(EInfusion(data))
+        data = input.readline()
+    return infusions
+
+class EInfuseListWidget(ESpellListWidget):
+    def __init__(self, clickExpand=True, cardShow=True):
+        super().__init__()
+        self.setItemDelegate(InvocDelegate(self))
+        self.clickExpand = clickExpand
+        self.cardShow = cardShow
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # NAME
+        if self.columnCount() == 1:
+            self.setColumnWidth(0, event.size().width())
+        else:
+            self.setColumnWidth(0, event.size().width()/2)
+            self.setColumnWidth(1, event.size().width()/2)
+
+        # THIS IS ABSOLUTELY VITAL
+        # I CANNOT UNDERSTATE THIS
+        if self.model():
+            self.model().layoutChanged.emit()
+
+        self.viewport().update()
+
+class AddInfuseDialog(AddSpellDialog):
+
+    spellsSelected = pyqtSignal(list)
+
+    def __init__(self, parent=None, windowTitle="Add an Infusion"):
+        super().__init__(parent, windowTitle)
+
+    def initUI(self):
+        self.spells_View = EInfuseListWidget(clickExpand=False, cardShow=True)
+        self.spells_List = ESpellModel(parent=None, root=["Name", "Item"])
+
+    def prepExec(self, level):
+        self.spells=None
+        self.displaySpell_List = self.spells_List.createModelFromLevel(self.spells_View, level)
+        self.spells_View.setModel(self.displaySpell_List)
+        self.spells_View.expandAll()
+        self.resize(400,500)
+        super().show()
+
+    def addSpell(self):
+        infusion = self.spells_View.selectedIndexes()[0].internalPointer()
+        if infusion.parent().itemData != self.spells_List.rootItem.itemData:
+            self.spells = [infusion.parent()]
+        else:
+            self.spells = [infusion]
+        self.spells_List.removeRow(infusion.row())
+        self.spellsSelected.emit(self.spells)
+        self.close()
+
+class EInfusionList(SpellSlotWidget):
+    def __init__(self, infusionList, parent=None):
+        super().__init__(0, infusionList, parent)
+
+    def initUI(self, infusionList, level):
+        self.addSpellDialog = AddInfuseDialog(self)
+        self.addSpellDialog.spellsSelected.connect(self.receiveSpell)
+
+        self.spells_View = EInfuseListWidget()
+        font = self.spells_View.font()
+        font.setPointSize(self.default_FS)
+        self.spells_View.setFont(font)
+        self.spells_List = ESpellModel(parent=self.spells_View, root=["Name"])
+        self.spells_View.setModel(self.spells_List)
+
+        self.known_Label = ELabel("4",fontSize=self.big_FS, bold=False)
+        self.items_Label = ELabel("2",fontSize=self.big_FS, bold=False)
+        self.mainLayout.addWidget(ELabel("Infusions Known",add=False,fontSize=self.small_FS),0,2,Qt.AlignTop|Qt.AlignHCenter)
+        self.mainLayout.addWidget(self.known_Label                                          ,1,2,Qt.AlignTop)
+        self.mainLayout.addWidget(ELabel("Infused Items",  add=False,fontSize=self.small_FS),0,3,Qt.AlignTop|Qt.AlignHCenter)
+        self.mainLayout.addWidget(self.items_Label                                          ,1,3,Qt.AlignTop)
+        self.mainLayout.addWidget(ELabel("Infusions", fontSize=self.big_FS, bold=False),     1,0,1,2,Qt.AlignTop)
+
+        self.mainLayout.addWidget(self.spells_View,2,0,1,4)
+        self.mainLayout.addLayout(self.button_Layout,3,0,1,4)
+
+        for infus in infusionList:
+            mainSpell = ESpellItem([infus.name, infus.item], source=infus)
+            mainSpell.appendChild(ESpellItem([infus.description], source=infus))
+            self.addSpellDialog.spells_List.appendRow(mainSpell)
+
+    def addSpell(self):
+        self.addSpellDialog.prepExec(self.parent.currentCharacter.level)
+
+    def receiveSpell(self, spells):
+        if spells:
+            for spell in spells:
+                self.spells_List.appendRow(spell)
+                self.parent.currentCharacter.spells.append(spell.source)
+            self.spells_View.setExpanded(self.spells_View.rootIndex(), True)
+
+    def delSpell(self):
+        try:
+            copy = self.spells_View.selectedIndexes()[0].internalPointer().copy()
+            self.parent.currentCharacter.spells.remove(copy.source)
+            self.addSpellDialog.spells_List.appendRow(copy)
+            self.addSpellDialog.spells_List.sort(1)
+            self.spells_List.removeRow(self.spells_View.selectedIndexes()[0].row(), self.spells_View.selectedIndexes()[0].parent())
+            self.addSpellDialog.spells_View.setExpanded(self.addSpellDialog.spells_View.rootIndex(), True)
+        except Exception as e:
+            print(e)
+
+#
+# END INFUSIONS
+#
 
 class ESpellWidget(QWidget):
     groupBoxStyleSheet_NoTitle = """
@@ -653,6 +819,7 @@ class ESpellWidget(QWidget):
         super().__init__(parent)
         self.allSpells = ESpell.importSpells("Vars\\finalSpells.tsv")
         self.invocations = importInvocations("Vars\\invocations.tsv")
+        self.infusions = importInfusions("Vars\\infusions.tsv")
         self.parent = parent
         self.setSizes()
         self.initUI()
@@ -738,6 +905,22 @@ class ESpellWidget(QWidget):
                 self.invocations_Box.known_Label.setText("8")
         else:
             self.invocations_Box.hide()
+
+        if self.currentCharacter.mainclass.name == "Artificer" and self.currentCharacter.level > 1:
+            self.infusions_Box.show()
+            level = self.currentCharacter.level
+            if level <= 5:
+                self.infusions_Box.known_Label.setText("4")
+            elif level <= 9:
+                self.infusions_Box.known_Label.setText("6")
+            elif level <= 13:
+                self.infusions_Box.known_Label.setText("8")
+            elif level <= 17:
+                self.infusions_Box.known_Label.setText("10")
+            else:
+                self.infusions_Box.known_Label.setText("12")
+        else:
+            self.infusions_Box.hide()
 
     def initUI(self):
         self.layout = QGridLayout()
@@ -833,6 +1016,9 @@ class ESpellWidget(QWidget):
         # Invocations
         self.invocations_Box = EInvocationList(self.invocations, self)
 
+        # Infusions
+        self.infusions_Box = EInfusionList(self.infusions, self)
+
         # Arcanums
 
         # Wild shape (?)
@@ -863,6 +1049,7 @@ class ESpellWidget(QWidget):
         col2Layout.addWidget(self.level4_Slots)
         col2Layout.addWidget(self.level5_Slots)
         col2Layout.addWidget(self.invocations_Box)
+        col2Layout.addWidget(self.infusions_Box)
 
         col3Layout.addWidget(self.level6_Slots)
         col3Layout.addWidget(self.level7_Slots)

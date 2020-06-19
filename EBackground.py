@@ -26,8 +26,8 @@ class EBackground():
         temp.addLang = int(data[1])
         # Proficiencies
         temp.proficiencies['Tool'] = data[2].replace("$",",").split(";")
-        temp.proficiencies['Skill']= [data[3]]
-        temp.proficiencies['Skill'].append(data[4])
+        temp.proficiencies['Skill']= [data[3].replace("$",",").split(";")]
+        temp.proficiencies['Skill'].append(data[4].replace("$",",").split(";"))
         # Features
         temp.features = data[5].replace("<>","\n").replace("$",",").split(";")
 

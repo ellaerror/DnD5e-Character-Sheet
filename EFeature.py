@@ -401,7 +401,7 @@ class SpellDelegate(QStyledItemDelegate):
         qApp.style().drawPrimitive(QStyle.PE_PanelItemViewItem, option, painter)
         if type(index.data(0)) != bool:
             text = index.data(0)
-            document = ETextDocument()
+            document = QTextDocument()
             document.setDocumentMargin(2)
             font = document.defaultFont()
             font.setPointSize(self.parent.font().pointSize())
@@ -435,7 +435,7 @@ class SpellDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index, startCol = 1):
         self.initStyleOption(option, index)
-        document = ETextDocument()
+        document = QTextDocument()
 
         document.setDocumentMargin(2)
         font = document.defaultFont()
@@ -591,7 +591,7 @@ class ELabeledEdit(QGroupBox):
     }
     QGroupBox::title {
         subcontrol-position: left center;
-        left: -4px;
+        left: -6px;
     }
     """
     editStyleSheet = """
@@ -599,8 +599,10 @@ class ELabeledEdit(QGroupBox):
         border: 0px;
     }
     """
-    def __init__(self, title="", height=90, width=None, scrollbars=True, enter=True):
+
+    def __init__(self, title="", height=90, width=None, scrollbars=True, enter=True, tfs=None, fs=None):
         super().__init__(title)
+        self.title = title
         if enter:
             self.edit = QTextEdit()
         else:
@@ -621,8 +623,13 @@ class ELabeledEdit(QGroupBox):
         self.edit.setStyleSheet(self.editStyleSheet)
         self.layout.addWidget(self.edit)
 
-    def setAlignment(self, alignment):
-        self.edit.setAlignment(alignment)
+        if fs:
+            self.setPointSize(fs)
+
+        if tfs:
+            font = self.font()
+            font.setPointSize(tfs)
+            self.setFont(font)
 
     def setPointSize(self, size):
         font = self.edit.document().defaultFont()
@@ -630,6 +637,9 @@ class ELabeledEdit(QGroupBox):
         doc = self.edit.document()
         doc.setDefaultFont(font)
         self.edit.setDocument(doc)
+
+    def setAlignment(self, alignment):
+        self.edit.setAlignment(alignment)
 
     def setLeftAligned(self):
         self.setStyleSheet(self.leftGroupBoxStyleSheet)

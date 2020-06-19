@@ -146,7 +146,7 @@ class EMainWidget(QWidget):
         }
         QGroupBox::title {
             subcontrol-position: bottom center;
-            bottom: -3px;
+            bottom: -4px;
         }
         """
         groupBoxStyleSheet_NoTitle = """
@@ -337,15 +337,15 @@ class EMainWidget(QWidget):
         self.physicalBox.setLayout(self.physicalLayout)
         self.physicalBox.setStyleSheet(groupBoxStyleSheet_NoTitle)
 
-        self.armorClass_Label  = ELineEdit(str(10+self.currentCharacter.getMod(1)),self.huge_FS,bold=True,width=70,height=60)
+        self.armorClass_Label  = ELineEdit(str(10+self.currentCharacter.getMod(1)),self.huge_FS,bold=True,width=80,height=60)
         self.armorClass_Label.setValidator(QIntValidator())
         self.armorClass_Label.editingFinished.connect(lambda: self.currentCharacter.setArmorClass(int(self.armorClass_Label.text())))
 
-        self.initiative_Label  = ELineEdit(self.currentCharacter.getModString(1),  self.huge_FS,bold=True,width=70,height=60)
+        self.initiative_Label  = ELineEdit(self.currentCharacter.getModString(1),  self.huge_FS,bold=True,width=80,height=60)
         self.initiative_Label.setValidator(QRegExpValidator(QRegExp(r"-{0,1}\+{0,1}[0-9]*")))
         self.initiative_Label.editingFinished.connect(lambda: self.currentCharacter.setInitiative(int(self.initiative_Label.text().strip("+ "))))
 
-        self.speed_Label       = ELineEdit(str(self.currentSubrace.speed)+"ft",    self.huge_FS,bold=True,width=70,height=60)
+        self.speed_Label       = ELineEdit(str(self.currentSubrace.speed)+"ft",    self.huge_FS,bold=True,width=80,height=60)
         self.speed_Label.setValidator(QRegExpValidator(QRegExp(r"[0-9]*ft")))
         self.speed_Label.editingFinished.connect(lambda: self.currentCharacter.setSpeed(int(self.speed_Label.text().strip("ft "))))
 
@@ -576,26 +576,21 @@ class EMainWidget(QWidget):
         equipment_Box.setStyleSheet(groupBoxStyleSheet)
         equipment_Box.setLayout(equipment_Layout)
 
-        self.cp_Edit = ELabeledEdit("CP", 22, 60, scrollbars=False, enter=False)
+        self.cp_Edit = ELabeledEdit("CP", 22, 60, fs=self.small_FS, tfs=self.small_FS, scrollbars=False, enter=False)
         self.cp_Edit.setAlignment(Qt.AlignCenter)
         self.cp_Edit.setLeftAligned()
-        self.cp_Edit.setPointSize(self.medium_FS)
-        self.sp_Edit = ELabeledEdit("SP", 22, 60, scrollbars=False, enter=False)
+        self.sp_Edit = ELabeledEdit("SP", 22, 60, fs=self.small_FS, tfs=self.small_FS, scrollbars=False, enter=False)
         self.sp_Edit.setAlignment(Qt.AlignCenter)
         self.sp_Edit.setLeftAligned()
-        self.sp_Edit.setPointSize(self.medium_FS)
-        self.ep_Edit = ELabeledEdit("EP", 22, 60, scrollbars=False, enter=False)
+        self.ep_Edit = ELabeledEdit("EP", 22, 60, fs=self.small_FS, tfs=self.small_FS, scrollbars=False, enter=False)
         self.ep_Edit.setAlignment(Qt.AlignCenter)
         self.ep_Edit.setLeftAligned()
-        self.ep_Edit.setPointSize(self.medium_FS)
-        self.gp_Edit = ELabeledEdit("GP", 22, 60, scrollbars=False, enter=False)
+        self.gp_Edit = ELabeledEdit("GP", 22, 60, fs=self.small_FS, tfs=self.small_FS, scrollbars=False, enter=False)
         self.gp_Edit.setAlignment(Qt.AlignCenter)
         self.gp_Edit.setLeftAligned()
-        self.gp_Edit.setPointSize(self.medium_FS)
-        self.pp_Edit = ELabeledEdit("PP", 22, 60, scrollbars=False, enter=False)
+        self.pp_Edit = ELabeledEdit("PP", 22, 60, fs=self.small_FS, tfs=self.small_FS, scrollbars=False, enter=False)
         self.pp_Edit.setAlignment(Qt.AlignCenter)
         self.pp_Edit.setLeftAligned()
-        self.pp_Edit.setPointSize(self.medium_FS)
 
         self.equipment_View = EEquipmentView()
 
@@ -645,7 +640,7 @@ class EMainWidget(QWidget):
 
         self.attack_View.setMinimumWidth(240)
         self.attack_View.setSizePolicy(QSizePolicy.Minimum,QSizePolicy.Minimum)
-        self.attack_Model = EItemModel(root=["Name","Atk Mod","Damage","Type"],parent=self.attack_View)
+        self.attack_Model = EItemModel(root=["Name","Mod","DMG","Type"],parent=self.attack_View)
         self.attack_View.setModel(self.attack_Model)
 
         self.addAttack_Button = QPushButton("+")
@@ -1781,7 +1776,7 @@ class Window(QMainWindow):
         menuFile.addAction(actionRollDice)
 
         menuEdit.addAction(actionRollScores)
-        menuEdit.addAction(actionSetOverrides)
+        # menuEdit.addAction(actionSetOverrides)
         menuEdit.addAction(actionAddFeature)
 
     def show(self):
@@ -1798,13 +1793,12 @@ class Window(QMainWindow):
         else:
             mH = widgetH
 
-        self.resize(self.size().width(),mH)
-        self.move((w-self.size().width())/2,(h-self.size().height())/4)
+        self.resize(int(self.size().width()),int(mH))
+        self.move(int((w-self.size().width())/2),int((h-self.size().height())/4))
 
         self.setVisible(True)
 
 if __name__ == "__main__":
-    print(QtCore.PYQT_VERSION_STR)
     app = QApplication([])
     MainWindow = Window()
     MainWindow.show()
