@@ -62,7 +62,7 @@ def importBackgrounds(path):
         # GP
         temp.gp = int(data[6])
         # Equipment
-        temp.startingEquipment = data[7].split(";")
+        temp.startingEquipment = data[7].replace("$",",").split(";")
 
         backgrounds.append(temp)
 

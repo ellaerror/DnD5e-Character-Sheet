@@ -268,7 +268,7 @@ def importClasses(path):
         temp.proficiencies['Tool']   = data[27].split(";")
         temp.proficiencies['Skill']  = data[28].split(";")
         # Equipment
-        elist = data[29].split(";")
+        elist = data[29].replace("$",",").split(";")
         for t in elist:
             temp.startingEquipment.append(t.split("|"))
         # Spell Slots
@@ -303,7 +303,7 @@ def writeClasses(path,classes):
         elist = []
         for e in c.startingEquipment:
             elist.append("|".join(e))
-        data += ";".join(elist)+","
+        data += ";".join(elist).replace(",","$")+","
         for i in range(0,20):
             data += c.spellsKnown[i]+","+",".join(c.spellSlots[i])+","
         data = data[:-1]
