@@ -12,7 +12,7 @@ class EBackground():
         string += self.name+","
         string += str(self.addLang)+","
         string += ";".join(self.proficiencies['Tool']).replace(",","$")+","
-        string += ",".join(self.proficiencies['Skill']).replace(",","$")+","
+        string += ",".join(self.proficiencies['Skill'])+","
         string += ";".join(":".join(x) for x in self.features).replace(",","$").replace("\n","<>")+","
         string += str(self.gp)+","
         string += ";".join(self.startingEquipment).replace(",","$")
