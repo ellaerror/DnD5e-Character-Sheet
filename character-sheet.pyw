@@ -836,6 +836,7 @@ class EMainWidget(QWidget):
             if s.name == self.subrace_Combo.currentText():
                 self.currentSubrace = copy.deepcopy(s)
                 self.currentCharacter.subrace = copy.deepcopy(s)
+                self.currentCharacter.speed = self.currentCharacter.subrace.speed
                 break
 
         self.currentRace = self.currentSubrace.parent
@@ -1187,7 +1188,7 @@ class EMainWidget(QWidget):
             self.profLang_View.setModel(self.profLang_Model)
             self.profLang_View.expandAll()
 
-            self.attack_Model = EItemModel(root=["Name","Atk Mod","Damage","Type"],parent=self.attack_View)
+            self.attack_Model = EItemModel(root=["Name","Mod","DMG","Type"],parent=self.attack_View)
             for item in attackList:
                 if len(item) > 0:
                     item = item.replace("$",",").split(";")
