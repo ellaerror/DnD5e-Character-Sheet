@@ -64,6 +64,7 @@ class EMainWidget(QWidget):
             self.class_Combo.addItem(c.name)
         self.class_Combo.currentIndexChanged.connect(self.updateSubclasses)
         self.class_Combo.currentIndexChanged.connect(self.updateClassValues)
+        self.class_Combo.currentIndexChanged.connect(self.clearSpells)
         self.class_Combo.currentIndexChanged.connect(self.updateClassLists)
         self.class_Combo.currentIndexChanged.connect(self.updateSavingThrows)
 
@@ -1220,7 +1221,9 @@ class EMainWidget(QWidget):
             self.ep_Edit.edit.setText(money[2])
             self.gp_Edit.edit.setText(money[3])
             self.pp_Edit.edit.setText(money[4])
-
+            #
+            # SPELLS
+            #
             spellKeys = []
             spellData = file.readline().strip().split(",")
             while len(spellData) > 1:
@@ -1275,11 +1278,16 @@ class EMainWidget(QWidget):
 
         self.pb_Edit.setText(self.currentCharacter.getPBString())
 
-        self.currentCharacter.spells = []
+        #self.currentCharacter.spells = []
         self.characterChanged.emit(self.currentCharacter)
 
         self.updateArmorClass()
         self.updateSpeed()
+
+    def clearSpells(self):
+        self.currentCharacter.spells = []
+        self.characterChanged.emit(self.currentCharacter)
+        self.spellListsMade.emit(self.currentCharacter.spells)
 
     def updateSkills(self):
         for num in range(0,18):
