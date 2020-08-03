@@ -1081,8 +1081,9 @@ class EMainWidget(QWidget):
             self.filename = filename
             self.saveCurrentCharacter()
 
-    def openCharacter(self):
-        filename, _ = QFileDialog.getOpenFileName(self,"Open Character","","Character File (*.csv)")
+    def openCharacter(self, filename=None):
+        if not filename:
+            filename, _ = QFileDialog.getOpenFileName(self,"Open Character","","Character File (*.csv)")
         if filename:
             file = open(filename, "r")
             #
@@ -1709,10 +1710,6 @@ class EScrollArea(QScrollArea):
         super().__init__(parent=parent)
         self.setFrameShape(QFrame.NoFrame)
         self.setWidgetResizable(True)
-        #self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
-
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
 
 class Window(QMainWindow):
     def __init__(self, parent=None):
@@ -1800,7 +1797,13 @@ class Window(QMainWindow):
         self.setVisible(True)
 
 if __name__ == "__main__":
+    try:
+        chrSheet = sys.argv[1]
+    except:
+        chrSheet = None
     app = QApplication([])
     MainWindow = Window()
     MainWindow.show()
+    if chrSheet:
+        MainWindow.mainWidget.openCharacter(chrSheet)
     sys.exit(app.exec_())
